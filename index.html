@@ -5,6 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Hub | Theory</title>
     <style>
+        /* ===== Вікно привітання ===== */
+#welcome {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg-color);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+}
+#welcome.hide { display: none; }
+
+.welcome-card {
+    width: 100%; max-width: 440px;
+    background: #0a0a0a; border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 36px 24px;
+}
+.welcome-eyebrow { font-size: 12px; letter-spacing: 3px; color: var(--text-muted); font-family: 'Menlo', monospace; }
+.welcome-title { font-size: 30px; font-weight: 600; letter-spacing: -0.5px; margin-top: 12px; }
+.welcome-lead { color: #a1a1aa; font-size: 14px; line-height: 1.6; margin-top: 12px; }
+
+.welcome-picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 32px; }
+.welcome-pick {
+    border: 1px solid var(--border-color); border-radius: 8px;
+    padding: 14px 8px; text-align: center; cursor: pointer;
+    background: transparent; transition: all 0.2s ease;
+}
+.welcome-pick b { display: block; font-size: 15px; font-weight: 600; color: var(--text-main); }
+.welcome-pick small { display: block; margin-top: 6px; font-size: 12px; color: var(--text-muted); }
+.welcome-pick:hover { background: #fff; border-color: #fff; }
+.welcome-pick:hover b, .welcome-pick:hover small { color: #000; }
+
+/* ===== Обгортка застосунку ===== */
+#app { display: none; height: 100vh; width: 100%; }
+#app.visible { display: flex; }
+
+.back-btn {
+    display: block; width: 100%; text-align: left; margin-bottom: 20px;
+    padding: 8px 10px; border-radius: 6px; cursor: pointer;
+    background: transparent; border: none;
+}
+.back-btn:hover { background: var(--accent-hover); }
+.back-btn .eyebrow { font-size: 11px; letter-spacing: 2px; color: var(--text-muted); font-family: 'Menlo', monospace; }
+.back-btn b { display: block; margin-top: 2px; font-size: 14px; font-weight: 500; color: var(--text-main); }
+
+.topic-list p { margin-top: 14px; font-size: 14px; }
+.topic-list span { color: var(--text-muted); font-size: 13px; }
         :root {
             --bg-color: #000000;
             --sidebar-bg: rgba(10, 10, 10, 0.6);
@@ -13,13 +57,14 @@
             --text-muted: #888888;
             --accent-hover: #1a1a1a;
             --code-bg: #111111;
+            --success-color: #2ea043;
+            --warning-color: #d29922;
+            --blue-color: #2f81f7;
+            --csharp-color: #9b4f96;
+            --cplus-color: #5c6bc0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -42,251 +87,140 @@
             overflow-y: auto;
         }
 
-        .sidebar-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
 
-        /* Subject Switcher */
-        .subject-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
+        .subject-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
 
         .tab {
-            flex: 1;
-            text-align: center;
-            padding: 8px 0;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-muted);
-            background: transparent;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            flex: 1; text-align: center; padding: 8px 0; font-size: 13px; font-weight: 500;
+            color: var(--text-muted); background: transparent; border: 1px solid var(--border-color);
+            border-radius: 6px; cursor: pointer; transition: all 0.2s ease;
         }
 
-        .tab.active {
-            background: #ffffff;
-            color: #000000;
-            border-color: #ffffff;
-        }
+        .tab.active { background: #ffffff; color: #000000; border-color: #ffffff; }
 
-        .nav-group {
-            padding: 16px 12px;
-        }
-
-        .nav-item {
-            margin-bottom: 4px;
-        }
-
+        .nav-group { padding: 16px 12px; }
+        .nav-item { margin-bottom: 4px; }
         .nav-title {
-            display: flex;
-            align-items: center;
-            padding: 10px 12px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-main);
-            cursor: pointer;
-            border-radius: 6px;
+            display: flex; align-items: center; padding: 10px 12px; font-size: 14px;
+            font-weight: 500; color: var(--text-main); cursor: pointer; border-radius: 6px;
             transition: background 0.2s ease;
         }
-
-        .nav-title:hover {
-            background-color: var(--accent-hover);
-        }
-
+        .nav-title:hover { background-color: var(--accent-hover); }
         .nav-title::before {
-            content: "›";
-            margin-right: 10px;
-            font-size: 18px;
-            color: var(--text-muted);
+            content: "›"; margin-right: 10px; font-size: 18px; color: var(--text-muted);
             transition: transform 0.2s ease;
         }
-
-        .nav-item.open .nav-title::before {
-            transform: rotate(90deg);
-        }
+        .nav-item.open .nav-title::before { transform: rotate(90deg); }
 
         .sub-nav {
-            display: none;
-            padding-left: 28px;
-            margin-top: 4px;
-            margin-bottom: 8px;
-            border-left: 1px solid var(--border-color);
-            margin-left: 16px;
+            display: none; padding-left: 28px; margin-top: 4px; margin-bottom: 8px;
+            border-left: 1px solid var(--border-color); margin-left: 16px;
         }
-
-        .nav-item.open .sub-nav {
-            display: block;
-        }
+        .nav-item.open .sub-nav { display: block; }
 
         .sub-item {
-            display: block;
-            padding: 8px 12px;
-            font-size: 13px;
-            color: var(--text-muted);
-            text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            cursor: pointer;
+            display: block; padding: 8px 12px; font-size: 13px; color: var(--text-muted);
+            text-decoration: none; border-radius: 6px; transition: all 0.2s ease; cursor: pointer;
         }
-
-        .sub-item:hover, .sub-item.active {
-            color: var(--text-main);
-            background-color: var(--accent-hover);
-        }
+        .sub-item:hover, .sub-item.active { color: var(--text-main); background-color: var(--accent-hover); }
 
         /* Main Content Styles */
-        .content {
-            flex: 1;
-            padding: 60px 80px;
-            overflow-y: auto;
-        }
+        .content-area { flex: 1; overflow-y: auto; position: relative; }
+        .content-section { display: none; padding: 60px 80px; }
+        .content-section.active { display: block; }
 
-        .breadcrumbs {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 32px;
-        }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            margin-bottom: 32px;
-        }
-
+        .breadcrumbs { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; }
+        h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 32px; }
+        .csharp-badge { background-color: var(--csharp-color); color: white; font-size: 12px; padding: 2px 8px; border-radius: 12px; vertical-align: middle; margin-left: 12px; }
+        .cplus-badge { background-color: var(--cplus-color); color: white; font-size: 12px; padding: 2px 8px; border-radius: 12px; vertical-align: middle; margin-left: 12px; }
         /* Theory Cards */
-        .theory-card {
-            background-color: #0a0a0a;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-
+        .theory-card { background-color: #0a0a0a; border: 1px solid var(--border-color); border-radius: 12px; padding: 32px; margin-bottom: 24px; }
         .theory-card h3 {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 16px;
-            color: #ffffff;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
+            font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #ffffff;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;
         }
+        
+        .qa-block { margin-bottom: 20px; }
+        .qa-question { font-weight: 600; color: var(--warning-color); margin-bottom: 6px; font-size: 15px; }
+        .qa-answer { color: #a1a1aa; font-size: 15px; line-height: 1.6; padding-left: 12px; border-left: 2px solid var(--border-color); }
+        .qa-question.blue { color: var(--blue-color); }
+        .qa-question.purple { color: var(--csharp-color); }
 
-        .theory-list {
-            list-style-type: none;
-        }
-
-        .theory-list li {
-            position: relative;
-            padding-left: 20px;
-            margin-bottom: 12px;
-            font-size: 15px;
-            color: #a1a1aa;
-            line-height: 1.6;
-        }
-
-        .theory-list li::before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #fff;
-        }
-
-        .highlight {
-            color: #fff;
-            font-weight: 500;
-        }
+        .highlight { color: #fff; font-weight: 500; }
 
         /* Code Blocks */
-        pre {
-            background-color: var(--code-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            overflow-x: auto;
-            margin-top: 16px;
-            margin-bottom: 24px;
-        }
+        pre { background-color: var(--code-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; overflow-x: auto; margin-top: 16px; margin-bottom: 16px; }
+        code { font-family: 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 13px; color: #e2e8f0; }
+        p code, li code, .qa-answer code { background-color: var(--code-bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color); color: #fff; }
 
-        code {
-            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
-            color: #e2e8f0;
-        }
-
-        p code, li code {
-            background-color: var(--code-bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            color: #fff;
-        }
-
-        .hide {
-            display: none;
-        }
+        .hide { display: none !important; }
     </style>
 </head>
 <body>
+    <!-- ВІКНО ПРИВІТАННЯ -->
+<div id="welcome">
+    <div class="welcome-card">
+        <div class="welcome-eyebrow">STUDY HUB</div>
+        <div class="welcome-title">Привіт 👋</div>
+        <p class="welcome-lead">Обери предмет, щоб продовжити. Тему візьмеш зі списку зліва після цього вікна.</p>
+        <div class="welcome-picks">
+            <button class="welcome-pick" onclick="chooseSubject('oop')"><b>ООП</b><small>Лаби 1–4</small></button>
+            <button class="welcome-pick" onclick="chooseSubject('mia')"><b>МіА</b><small>Вступ</small></button>
+            <button class="welcome-pick" onclick="chooseSubject('okr')"><b>ОКР</b><small>Основи</small></button>
+        </div>
+    </div>
+</div>
 
     <!-- Sidebar -->
+    <div id="app">
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="subject-tabs">
-                <button class="tab active" onclick="switchSubject('oop')">ООП</button>
-                <button class="tab" onclick="switchSubject('mia')">МіА</button>
-                <button class="tab" onclick="switchSubject('okr')">ОКР</button>
-            </div>
-        </div>
+    <button class="back-btn" onclick="backToWelcome()">
+        <span class="eyebrow">STUDY HUB</span>
+        <b>← До вибору предмету</b>
+    </button>
+    <div class="subject-tabs">
+        <button class="tab" data-subject="oop" onclick="switchSubject('oop')">ООП</button>
+        <button class="tab" data-subject="mia" onclick="switchSubject('mia')">МіА</button>
+        <button class="tab" data-subject="okr" onclick="switchSubject('okr')">ОКР</button>
+    </div>
+</div>
 
         <div class="nav-group" id="nav-oop">
-            <!-- LW1 -->
             <div class="nav-item">
                 <div class="nav-title" onclick="toggleNav(this)">LW1. Класи і об'єкти</div>
                 <div class="sub-nav">
-                    <div class="sub-item">LW1. Класи і об'єкти C++ та C#</div>
-                    <div class="sub-item">Теоретичні відомості</div>
-                    <div class="sub-item">Гайд: перший клас у C++</div>
+                    <div class="sub-item" onclick="switchContent('lw1')">Захист: C++</div>
+                    <div class="sub-item" onclick="switchContent('lw1-cs')">Захист: C#</div>
                 </div>
             </div>
             
-            <!-- LW2 -->
             <div class="nav-item open">
                 <div class="nav-title" onclick="toggleNav(this)">LW2. Перевантаження операторів</div>
                 <div class="sub-nav">
-                    <div class="sub-item">LW2. Перевантаження операторів C++ та C#</div>
-                    <div class="sub-item active" onclick="showContent('lw2-theory')">Перевантаження операторів у C++</div>
-                    <div class="sub-item">Перевантаження операторів у C#</div>
+                    <div class="sub-item" onclick="switchContent('lw2')">Захист: C++</div>
+                    <div class="sub-item" onclick="switchContent('lw2-cs')">Захист: C#</div>
                 </div>
             </div>
 
-            <!-- LW3 -->
             <div class="nav-item">
-                <div class="nav-title" onclick="toggleNav(this)">LW3. Успадкування та поліморфізм</div>
+                <div class="nav-title" onclick="toggleNav(this)">LW3. Успадкування і поліморфізм</div>
                 <div class="sub-nav">
-                    <div class="sub-item">LW3. Успадкування та поліморфізм</div>
-                    <div class="sub-item">Успадкування та поліморфізм C++</div>
-                    <div class="sub-item">Успадкування та поліморфізм у C#</div>
+                    <div class="sub-item" onclick="switchContent('lw3')">Захист: C++</div>
+                    <div class="sub-item" onclick="switchContent('lw3-cs')">Захист: C#</div>
                 </div>
             </div>
 
-            <!-- LW4 -->
             <div class="nav-item">
                 <div class="nav-title" onclick="toggleNav(this)">LW4. Множинне успадкування</div>
                 <div class="sub-nav">
-                    <div class="sub-item">LW4. Множинне успадкування</div>
-                    <div class="sub-item">Множинне успадкування в C++</div>
-                    <div class="sub-item">Інтерфейси в C#</div>
+                    <div class="sub-item" onclick="switchContent('lw4')">Захист: C++</div>
+                    <div class="sub-item" onclick="switchContent('lw4-cs')">Захист: C# (Інтерфейси)</div>
                 </div>
             </div>
         </div>
 
-        <!-- Placeholders for other subjects -->
         <div class="nav-group hide" id="nav-mia">
             <div class="nav-item">
                 <div class="nav-title" onclick="toggleNav(this)">Тема 1. Вступ</div>
@@ -303,77 +237,407 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="content">
-        <div class="breadcrumbs">ООП / LW2. Перевантаження операторів / C++</div>
-        <h1>Перевантаження операторів у C++</h1>
+    <main class="content-area">
 
-        <div class="theory-card">
-            <h3>1. Головна суть</h3>
-            <ul class="theory-list">
-                <li><span class="highlight">Що це?</span> Можливість перевизначити дію стандартних операторів (<code>+</code>, <code>-</code>, <code>==</code>, <code>&lt;&lt;</code>) для об'єктів власних класів.</li>
-                <li><span class="highlight">Навіщо?</span> Щоб код був читабельним. Замість <code>vec1.add(vec2)</code> ми пишемо просто <code>vec1 + vec2</code>.</li>
-                <li><span class="highlight">Синтаксис:</span> Використовується ключове слово <code>operator</code>, після якого йде символ оператора.</li>
-            </ul>
+        <div id="home-oop" class="content-section">
+    <div class="breadcrumbs">Теорія / ООП</div>
+    <h1>ООП</h1>
+    <p class="qa-answer">Шпаргалка для захисту. Обери лабораторну в списку зліва — жодна тема не відкрита, доки сам її не натиснеш.</p>
+    <div class="theory-card">
+        <h3>Теми</h3>
+        <div class="topic-list">
+            <p><b>LW1. Класи і об'єкти</b><br><span>Захист: C++ · Захист: C#</span></p>
+            <p><b>LW2. Перевантаження операторів</b><br><span>Захист: C++ · Захист: C#</span></p>
+            <p><b>LW3. Успадкування і поліморфізм</b><br><span>Захист: C++ · Захист: C#</span></p>
+            <p><b>LW4. Множинне успадкування</b><br><span>Захист: C++ · Захист: C# (Інтерфейси)</span></p>
+        </div>
+    </div>
+</div>
+
+<div id="home-mia" class="content-section">
+    <div class="breadcrumbs">Теорія / МіА</div>
+    <h1>МіА</h1>
+    <div class="theory-card">
+        <h3>Поки порожньо</h3>
+        <p class="qa-answer">Сюди ляже конспект, коли з'явиться матеріал. Зараз розділ лише тримає місце.</p>
+    </div>
+</div>
+
+<div id="home-okr" class="content-section">
+    <div class="breadcrumbs">Теорія / ОКР</div>
+    <h1>ОКР</h1>
+    <div class="theory-card">
+        <h3>Поки порожньо</h3>
+        <p class="qa-answer">Сюди ляже конспект, коли з'явиться матеріал. Зараз розділ лише тримає місце.</p>
+    </div>
+</div>
+        
+        <!-- ================= LW1 C++ ================= -->
+        <div id="lw1" class="content-section">
+            <div class="breadcrumbs">ООП / LW1 / Шпаргалка для захисту</div>
+            <h1>Класи, об'єкти та інкапсуляція <h1>Класи та об'єкти <span class="cplus-badge">C++</span></h1></h1>
+
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь (База)</h3>
+                <p class="qa-answer">
+                    "Клас — це креслення або шаблон, за яким створюються об'єкти. Він об'єднує дані (поля) та функції для роботи з ними (методи) в одну сутність. Об'єкт — це конкретний екземпляр цього класу в пам'яті."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                
+                <div class="qa-block">
+                    <div class="qa-question">1. Що таке інкапсуляція?</div>
+                    <div class="qa-answer">Це приховування внутрішньої реалізації класу від зовнішнього світу. Ми робимо поля <code>private</code>, а доступ до них надаємо через <code>public</code> методи (гетери і сетери).</div>
+                </div>
+
+                <div class="qa-block">
+                    <div class="qa-question">2. Які є специфікатори доступу?</div>
+                    <div class="qa-answer">
+                        <span class="highlight">public:</span> доступно всюди.<br>
+                        <span class="highlight">private:</span> доступно ТІЛЬКИ методам цього ж класу (за замовчуванням у class).<br>
+                        <span class="highlight">protected:</span> доступно класу та його спадкоємцям (важливо для успадкування).
+                    </div>
+                </div>
+                
+                <div class="qa-block">
+                    <div class="qa-question">3. Що таке конструктор і деструктор?</div>
+                    <div class="qa-answer">
+                        <span class="highlight">Конструктор</span> викликається автоматично при створенні об'єкта (виділяє пам'ять, задає початкові значення). Не має типу повернення, ім'я збігається з класом.<br>
+                        <span class="highlight">Деструктор</span> (з тильдою <code>~</code>) викликається при знищенні об'єкта. Потрібен для очищення динамічної пам'яті.
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="theory-card">
-            <h3>2. Що не можна перевантажити?</h3>
-            <ul class="theory-list">
-                <li><code>::</code> (Доступ до області видимості)</li>
-                <li><code>.</code> (Доступ до члена класу)</li>
-                <li><code>.*</code> (Доступ до члена за вказівником)</li>
-                <li><code>?:</code> (Тернарний оператор)</li>
-                <li><code>sizeof</code>, <code>typeid</code>, <code>static_cast</code> тощо.</li>
-            </ul>
+        <!-- ================= LW1 C# ================= -->
+        <div id="lw1-cs" class="content-section">
+            <div class="breadcrumbs">ООП / LW1 / C#</div>
+            <h1>Класи та об'єкти <span class="csharp-badge">C#</span></h1>
+
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь</h3>
+                <p class="qa-answer">
+                    "Клас у C# — це посилальний тип даних (reference type), який виділяється в купі (heap). Головна відмінність C# від C++ у тому, що тут немає поділу на файли заголовків (.h) та реалізації (.cpp) — усе пишеться в одному файлі. Також C# використовує Властивості (Properties) для зручної інкапсуляції."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                <div class="qa-block">
+                    <div class="qa-question purple">1. Що таке Властивості (Properties) і чим вони кращі за поля?</div>
+                    <div class="qa-answer">Властивість — це механізм, який виглядає як звичайне поле, але всередині містить методи <code>get</code> (читання) і <code>set</code> (запис). Це дозволяє контролювати, які дані записуються в об'єкт, не створюючи громіздких методів <code>GetAge()</code> чи <code>SetAge()</code> як у Java або C++.</div>
+                </div>
+                <div class="qa-block">
+                    <div class="qa-question blue">2. Чи є в C# деструктори і як очищується пам'ять?</div>
+                    <div class="qa-answer">У C# пам'яттю керує <span class="highlight">Збирач сміття (Garbage Collector - GC)</span>. Він автоматично видаляє об'єкти, на які більше немає посилань. Тому ручне управління пам'яттю (як <code>delete</code> у C++) не потрібне.</div>
+                </div>
+            </div>
         </div>
 
-        <div class="theory-card">
-            <h3>3. Метод класу VS Дружня функція (friend)</h3>
-            <ul class="theory-list">
-                <li><span class="highlight">Як метод класу:</span> Лівий операнд завжди є об'єктом цього ж класу (неявно передається через <code>this</code>). Зручно для операторів <code>+=</code>, <code>-=</code>.</li>
-                <li><span class="highlight">Як дружня функція:</span> Використовується, коли лівий операнд має інший тип (наприклад, потік <code>ostream</code> для <code>&lt;&lt;</code>). Має доступ до <code>private</code> полів.</li>
-            </ul>
+        <!-- ================= LW2 C++ ================= -->
+        <div id="lw2" class="content-section">
+            <div class="breadcrumbs">ООП / LW2 / Шпаргалка для захисту</div>
+            <h1>Перевантаження операторів у C++ <span class="cplus-badge">C++</span></h1>
+
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь (База)</h3>
+                <p class="qa-answer">
+                    "Перевантаження операторів — це механізм, який дозволяє надати стандартним операторам (<code>+</code>, <code>-</code>, <code>==</code>) <span class="highlight">свій власний зміст</span> для об'єктів наших класів. Зручно писати <code>a + b</code> замість <code>a.add(b)</code>."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                
+                <div class="qa-block">
+                    <div class="qa-question">1. Які оператори НЕ можна перевантажити?</div>
+                    <div class="qa-answer"><code>::</code> (дозвіл області видимості), <code>.</code> (доступ до поля), <code>.*</code>, <code>?:</code> (тернарний) та <code>sizeof</code>. Бо це порушить базову логіку доступу мови.</div>
+                </div>
+
+                <div class="qa-block">
+                    <div class="qa-question">2. Різниця: метод класу чи дружня функція (friend)?</div>
+                    <div class="qa-answer">
+                        <span class="highlight">Метод:</span> Лівий операнд ЗАВЖДИ є об'єктом нашого класу (неявно це <code>this</code>). Добре для <code>+=</code>, <code>=</code>.<br>
+                        <span class="highlight">friend:</span> Використовуємо, коли лівий операнд — це ІНШИЙ тип. Наприклад <code>&lt;&lt;</code> (зліва <code>std::ostream</code>). Має доступ до <code>private</code> полів класу.
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="theory-card">
-            <h3>4. Швидкий приклад для захисту</h3>
-<pre><code>class Point {
-private:
-    int x, y;
-public:
-    Point(int x, int y) : x(x), y(y) {}
+        <!-- ================= LW2 C# ================= -->
+        <div id="lw2-cs" class="content-section">
+            <div class="breadcrumbs">ООП / LW2 / C#</div>
+            <h1>Перевантаження операторів <span class="csharp-badge">C#</span></h1>
 
-    // Перевантаження як метод класу
-    Point operator+(const Point& other) {
-        return Point(this->x + other.x, this->y + other.y);
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь</h3>
+                <p class="qa-answer">
+                    "У C# перевантаження операторів дозволяє нам визначити поведінку стандартних математичних чи логічних операцій для наших класів. Але синтаксис суворіший, ніж у C++: оператор <span class="highlight">обов'язково має бути public static</span>."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                <div class="qa-block">
+                    <div class="qa-question purple">1. Чому оператор у C# обов'язково `public static`?</div>
+                    <div class="qa-answer">Тому що оператор застосовується до типів (класів), а не до конкретного екземпляра об'єкта. Він не має вказівника <code>this</code>. <code>public</code> потрібен, щоб оператор був доступний звідусіль.</div>
+                </div>
+                <div class="qa-block">
+                    <div class="qa-question blue">2. Чи можна в C# перевантажити оператори `==` або `!=`?</div>
+                    <div class="qa-answer">Так, але є правило: вони <span class="highlight">перевантажуються тільки парами</span>. Якщо ви перевантажили <code>==</code>, компілятор змусить вас перевантажити і <code>!=</code>. Те саме стосується <code>&gt;</code> та <code>&lt;</code>. Крім того, рекомендується перевизначити методи <code>Equals()</code> та <code>GetHashCode()</code>.</div>
+                </div>
+                <div class="qa-block">
+                    <div class="qa-question">3. Чи існують в C# дружні функції (friend) для перевантаження?</div>
+                    <div class="qa-answer">Ні, концепції <code>friend</code> у C# не існує через суворішу інкапсуляцію.</div>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>💻 Як пояснювати свій код</h3>
+<pre><code>public class Point {
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public Point(int x, int y) { X = x; Y = y; }
+
+    // 1. Пояснення: "Це перевантаження оператора додавання. 
+    // Він public static. На вхід приймає два об'єкти нашого класу і повертає НОВИЙ об'єкт."
+    public static Point operator +(Point p1, Point p2) {
+        return new Point(p1.X + p2.X, p1.Y + p2.Y);
     }
+}</code></pre>
+            </div>
+        </div>
 
-    // Перевантаження як дружня функція (для виводу в консоль)
-    friend std::ostream& operator&lt;&lt;(std::ostream& os, const Point& p) {
-        os &lt;&lt; "(" &lt;&lt; p.x &lt;&lt; ", " &lt;&lt; p.y &lt;&lt; ")";
-        return os;
+        <!-- ================= LW3 C++ ================= -->
+        <div id="lw3" class="content-section">
+            <div class="breadcrumbs">ООП / LW3 / Шпаргалка для захисту</div>
+            <h1>Успадкування та Поліморфізм <span class="cplus-badge">C++</span></h1>
+
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь (База)</h3>
+                <p class="qa-answer">
+                    "Успадкування дозволяє створити новий клас на базі існуючого, перейнявши його поля та методи. <span class="highlight">Поліморфізм</span> — це здатність функції обробляти дані різних типів (класів) через спільний інтерфейс базового класу, використовуючи віртуальні функції."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                
+                <div class="qa-block">
+                    <div class="qa-question blue">1. Що робить ключове слово `virtual`? (ДУЖЕ ВАЖЛИВО)</div>
+                    <div class="qa-answer">Воно вмикає <span class="highlight">пізнє (динамічне) зв'язування</span>. Програма вирішує, яку саме функцію викликати, не на етапі компіляції, а під час виконання програми (runtime), залежно від того, на який РЕАЛЬНИЙ об'єкт вказує вказівник базового класу. Для цього створюється віртуальна таблиця (vtable).</div>
+                </div>
+
+                <div class="qa-block">
+                    <div class="qa-question">2. Що таке абстрактний клас?</div>
+                    <div class="qa-answer">Це клас, який містить хоча б одну <span class="highlight">чисто віртуальную функцію</span> (закінчується на <code>= 0</code>). Неможливо створити об'єкт абстрактного класу. Він слугує лише як інтерфейс для спадкоємців.</div>
+                </div>
+                
+                <div class="qa-block">
+                    <div class="qa-question">3. Навіщо потрібен віртуальний деструктор?</div>
+                    <div class="qa-answer">Якщо ми видаляємо об'єкт похідного класу через вказівник на базовий клас, і деструктор не віртуальний — викличеться ТІЛЬКИ деструктор базового класу. Станеться <span class="highlight">витік пам'яті</span>. Віртуальний деструктор гарантує, що спочатку викличеться деструктор похідного, а потім базового.</div>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>💻 Як пояснювати свій код</h3>
+<pre><code>class Animal {
+public:
+    // 1. Пояснення: "Це віртуальна функція. 
+    // Я дозволяю її перевизначати в дочірніх класах."
+    virtual void speak() { cout &lt;&lt; "Some sound"; }
+    
+    // Обов'язковий віртуальний деструктор
+    virtual ~Animal() {} 
+};
+
+class Dog : public Animal {
+public:
+    // 2. Пояснення: "Тут я перевизначаю метод. Слово override 
+    // допомагає компілятору перевірити, чи дійсно є такий метод у базовому класі."
+    void speak() override { cout &lt;&lt; "Woof!"; }
+};
+
+// 3. Пояснення поліморфізму в main:
+// Animal* ptr = new Dog();
+// ptr->speak(); // Виведе "Woof!", бо функція virtual</code></pre>
+            </div>
+        </div>
+
+        <!-- ================= LW3 C# ================= -->
+        <div id="lw3-cs" class="content-section">
+            <div class="breadcrumbs">ООП / LW3 / C#</div>
+            <h1>Успадкування і поліморфізм <span class="csharp-badge">C#</span></h1>
+
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь</h3>
+                <p class="qa-answer">
+                    "У C# класи підтримують одиничне успадкування через двокрапку <code>:</code>. Поліморфізм реалізується за допомогою віртуальних методів. Для цього в базовому класі метод позначається ключовим словом <code>virtual</code>, а в похідному — <span class="highlight">обов'язково <code>override</code></span>."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                <div class="qa-block">
+                    <div class="qa-question purple">1. У чому різниця між `override` та `new` при приховуванні методів?</div>
+                    <div class="qa-answer">
+                        <span class="highlight">override:</span> Повноцінний поліморфізм. Якщо ми викличемо метод через вказівник базового класу, виконається метод дочірнього.<br>
+                        <span class="highlight">new:</span> Просто приховування. Метод відв'язується від віртуального ланцюга. Якщо викликати через вказівник базового класу — виконається метод базового, а не дочірнього.
+                    </div>
+                </div>
+                <div class="qa-block">
+                    <div class="qa-question">2. Як у C# викликати конструктор базового класу?</div>
+                    <div class="qa-answer">За допомогою ключового слова <code>base()</code>. (У C++ ми використовували ім'я базового класу в списку ініціалізації).</div>
+                </div>
+                <div class="qa-block">
+                    <div class="qa-question blue">3. Що робить ключове слово `sealed`?</div>
+                    <div class="qa-answer">Воно забороняє подальше успадкування від цього класу (аналог <code>final</code> у C++).</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= LW4 C++ ================= -->
+        <div id="lw4" class="content-section">
+            <div class="breadcrumbs">ООП / LW4 / Шпаргалка для захисту</div>
+            <h1>Множинне успадкування та Ромб смерті <span class="cplus-badge">C++</span></h1>
+
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь (База)</h3>
+                <p class="qa-answer">
+                    "Множинне успадкування — це коли клас успадковує властивості та методи від <span class="highlight">двох або більше</span> базових класів одночасно. Це дозволяє створювати складні комбіновані об'єкти (наприклад, клас 'Смартфон' може успадковувати класи 'Телефон' і 'Камера')."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                
+                <div class="qa-block">
+                    <div class="qa-question blue">1. Що таке «Ромбоподібне успадкування» (Diamond of Death)?</div>
+                    <div class="qa-answer">Це проблема, яка виникає, коли класи <code>B</code> і <code>C</code> успадковують базовий клас <code>A</code>, а клас <code>D</code> успадковує і <code>B</code>, і <code>C</code>. В результаті об'єкт класу <code>D</code> міститиме <span class="highlight">дві окремі копії</span> полів класу <code>A</code>. Це викликає неоднозначність (компілятор не знає, до якої копії звертатися) та перевитрату пам'яті.</div>
+                </div>
+
+                <div class="qa-block">
+                    <div class="qa-question blue">2. Як вирішити проблему ромба?</div>
+                    <div class="qa-answer">За допомогою <span class="highlight">віртуального успадкування</span> (ключове слово <code>virtual</code> при успадкуванні: <code>class B : virtual public A</code>). Тоді компілятор гарантує, що спільний базовий клас <code>A</code> буде існувати в об'єкті <code>D</code> лише в одному екземплярі.</div>
+                </div>
+
+                <div class="qa-block">
+                    <div class="qa-question">3. В якому порядку викликаються конструктори при множинному успадкуванні?</div>
+                    <div class="qa-answer">Спочатку викликаються конструктори базових класів у тому порядку, <span class="highlight">в якому вони перелічені в списку успадкування</span> (зліва направо). Потім конструктори полів самого класу, і наприкінці — тіло конструктора похідного класу. Деструктори викликаються у зворотному порядку.</div>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>💻 Як пояснювати свій код</h3>
+<pre><code>class Device {
+public: int power;
+};
+
+// 1. Пояснення: "Я використовую virtual public, щоб при 
+// створенні MultifunctionPrinter клас Device не дублювався."
+class Printer : virtual public Device {};
+class Scanner : virtual public Device {};
+
+// 2. Пояснення: "Тут множинне успадкування. 
+// Завдяки віртуальному успадкуванню вище, тут лише одна змінна power."
+class MultifunctionPrinter : public Printer, public Scanner {
+public:
+    void printPower() {
+        // Якби не було virtual, компілятор видав би помилку 
+        // "ambiguous access of 'power'" (неоднозначність)
+        cout &lt;&lt; power; 
     }
 };</code></pre>
+            </div>
         </div>
+
+        <!-- ================= LW4 C# ================= -->
+        <div id="lw4-cs" class="content-section">
+            <div class="breadcrumbs">ООП / LW4 / C#</div>
+            <h1>Інтерфейси (Множинне успадкування) <span class="csharp-badge">C#</span></h1>
+
+            <div class="theory-card">
+                <h3>🎙️ Як почати відповідь</h3>
+                <p class="qa-answer">
+                    "Мова C# <span class="highlight">не підтримує множинне успадкування класів</span> для уникнення 'проблеми ромба' (Diamond of Death). Замість цього використовується множинна реалізація Інтерфейсів."
+                </p>
+            </div>
+
+            <div class="theory-card">
+                <h3>🎯 Часті питання викладача</h3>
+                <div class="qa-block">
+                    <div class="qa-question blue">1. Що таке Інтерфейс (Interface)?</div>
+                    <div class="qa-answer">Інтерфейс (<code>interface</code>) — це строгий контракт. Він містить лише сигнатури методів, властивостей або подій <span class="highlight">без їхньої реалізації</span> (хоча з C# 8.0 додали дефолтні реалізації, але на лабах зазвичай питають класичне визначення). У ньому не можна оголошувати поля зі станом.</div>
+                </div>
+                <div class="qa-block">
+                    <div class="qa-question purple">2. Чому інтерфейси вирішують проблему ромба?</div>
+                    <div class="qa-answer">Тому що інтерфейс не містить даних (полів) і реалізації. Якщо клас успадковує два інтерфейси з однаковим методом `Print()`, компілятору не потрібно думати, яку саме реалізацію обрати (як це було б з класами), адже клас зобов'язаний сам написати єдину реалізацію цього методу.</div>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>💻 Як пояснювати свій код</h3>
+<pre><code>// 1. Пояснення: "Я створив два інтерфейси. За конвенцією C# їхні імена починаються з літери 'I'."
+interface IPrinter { void Print(); }
+interface IScanner { void Scan(); }
+
+// 2. Пояснення: "Клас MultifunctionDevice не може успадковувати 
+// два базові класи, але може реалізувати скільки завгодно інтерфейсів."
+class MultifunctionDevice : IPrinter, IScanner {
+    // 3. Пояснення: "Я зобов'язаний реалізувати методи обох інтерфейсів,
+    // інакше компілятор видасть помилку."
+    public void Print() { Console.WriteLine("Printing..."); }
+    public void Scan() { Console.WriteLine("Scanning..."); }
+}</code></pre>
+            </div>
+        </div>
+
     </main>
 
     <script>
-        // Toggle Sidebar Nav Sections
-        function toggleNav(element) {
-            const parent = element.parentElement;
-            parent.classList.toggle('open');
-        }
+    // --- Вікно привітання ---
+    function chooseSubject(subject) {
+        document.getElementById('welcome').classList.add('hide');
+        document.getElementById('app').classList.add('visible');
+        switchSubject(subject);
+    }
 
-        // Switch Subjects
-        function switchSubject(subject) {
-            // Update tabs
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+    function backToWelcome() {
+        document.getElementById('app').classList.remove('visible');
+        document.getElementById('welcome').classList.remove('hide');
+    }
 
-            // Update nav groups
-            document.querySelectorAll('.nav-group').forEach(g => g.classList.add('hide'));
-            document.getElementById(`nav-${subject}`).classList.remove('hide');
-        }
-    </script>
+    // --- Навігація ---
+    function toggleNav(element) {
+        element.parentElement.classList.toggle('open');
+    }
+
+    function switchSubject(subject) {
+        document.querySelectorAll('.tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.subject === subject));
+
+        document.querySelectorAll('.nav-group').forEach(g => g.classList.add('hide'));
+        document.getElementById('nav-' + subject).classList.remove('hide');
+
+        // скидаємо вибір теми і відкриваємо домашню сторінку предмета
+        document.querySelectorAll('.sub-item').forEach(el => el.classList.remove('active'));
+        showSection('home-' + subject);
+    }
+
+    function switchContent(targetId) {
+        document.querySelectorAll('.sub-item').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
+        showSection(targetId);
+    }
+
+    function showSection(targetId) {
+        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+        document.querySelector('.content-area').scrollTop = 0;
+    }
+</script>
 </body>
 </html>
